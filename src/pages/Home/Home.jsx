@@ -59,7 +59,9 @@ export default function Home() {
         setUnitilizerCount((v) => v + 1);
       }
     } catch (e) {
-      console.error("Erro na fechar unitilizador:", e);
+      console.error("Erro ao fechar unitilizador:", e);
+    } finally {
+      setIsLoading(false);
     }
   }
 
