@@ -14,6 +14,7 @@ import Header from "./components/Header";
 import RobotStatus from "./components/RobotStatus";
 import Button from "./components/Button";
 import { MdCheckBox, MdCheckBoxOutlineBlank } from "react-icons/md";
+import AvaliableUnit from "./components/AvaliableUnit";
 
 export default function Home() {
   const token =
@@ -28,6 +29,8 @@ export default function Home() {
   const [selectedUnitilizers, setSelectedUnitilizers] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [unitModalIsOpen, setUnitModalIsOpen] = useState(false)
 
   const filteredData = data.filter(
     (item) =>
@@ -138,12 +141,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090C15] text-white p-8">
+    <div className="min-h-screen bg-[#090C15] text-white p-8 relative">
       <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <StatCard
-          message={"Total de Items Disponíveis"}
+          message={"Total de Itens Disponíveis"}
           icon={<FaBoxOpen className="text-3xl" />}
           colorClasses={"bg-[#5046E7]/20 text-[#5046E7]"}
           dynamicData={totalObjects}
@@ -177,7 +180,7 @@ export default function Home() {
                 bgColor={"bg-[#18b81d]"}
                 content={"Abrir Unitilizador"}
                 icon={<LuPackageOpen />}
-                fn={() => alert("Botão de Abrir")}
+                fn={() => setUnitModalIsOpen(true)}
                 txtColor={"text-white"}
               />
 
@@ -318,6 +321,12 @@ export default function Home() {
         }
       </p>
     )}
+
+    {
+      unitModalIsOpen && (
+        <AvaliableUnit setIsModalOpenFn={setUnitModalIsOpen}/>
+      )
+    }
     </div>
   );
 }
