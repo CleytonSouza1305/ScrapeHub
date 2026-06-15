@@ -326,7 +326,7 @@ export default function Home() {
 
     {
       unitModalIsOpen && (
-        <AvaliableUnit setIsModalOpenFn={setUnitModalIsOpen}/>
+        <AvaliableUnit setIsModalOpenFn={setUnitModalIsOpen} token={token} opennedData={data}/>
       )
     }
     </div>
