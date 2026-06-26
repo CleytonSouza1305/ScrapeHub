@@ -5,16 +5,16 @@ import Loading from "../Loading.jsx";
 
 export const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
     const checkAuth = async () => {
-      const user = await validateToken();
+      const userData = await validateToken();
       
-      if (user) {
-        setIsAuthenticated(true);
+      if (userData) {
+        setUser(userData);
       } else {
-        setIsAuthenticated(false);
+        setUser(null);
       }
       setLoading(false);
     };
@@ -26,5 +26,5 @@ export const ProtectedRoute = () => {
     return <Loading isLoading={loading}/>
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  return user ? <Outlet context={user} /> : <Navigate to="/login" replace />;
 };
