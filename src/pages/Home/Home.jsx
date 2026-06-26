@@ -15,8 +15,11 @@ import RobotStatus from "./components/RobotStatus";
 import Button from "./components/Button";
 import { MdCheckBox, MdCheckBoxOutlineBlank } from "react-icons/md";
 import AvaliableUnit from "./components/AvaliableUnit";
+import { useOutletContext } from "react-router-dom";
 
 export default function Home() {
+  const user = useOutletContext();
+  console.log(user)
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   const [data, setData] = useState([]);
@@ -30,9 +33,11 @@ export default function Home() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [unitModalIsOpen, setUnitModalIsOpen] = useState(false)
+  const [unitModalIsOpen, setUnitModalIsOpen] = useState(false);
 
-  const filteredData = data.filter(
+  const validArr = data || [];
+
+  const filteredData = validArr.filter(
     (item) =>
       item.unitilizer &&
       item.unitilizer.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -51,12 +56,12 @@ export default function Home() {
           body: JSON.stringify({ unitilizers: selectedUnitilizers }),
         });
 
+        const data = await response.json()
         if (!response.ok) {
-          throw new Error("Falha ao enviar os dados...");
+          throw new Error("Falha ao enviar os dados...", data.message);
         }
-
         setIsSelectionMode(false);
-        setUnitilizerCount((v) => v + 1);
+        setUnitilizerCount((v) => v + 1)
       }
     } catch (e) {
       console.error("Erro ao fechar unitilizador:", e);
@@ -93,7 +98,7 @@ export default function Home() {
     async function loadScrappedData() {
       setIsLoading(true);
       setIsSelectionMode(false);
-      setSearchTerm("")
+      setSearchTerm("");
       setSelectedUnitilizers([]);
       setRobotStatus("loading");
       try {
@@ -105,8 +110,14 @@ export default function Home() {
         });
 
         if (!response.ok) {
-          setData();
+          setData([]);
+          setRobotStatus("error");
           throw new Error("Falha ao buscar os dados");
+        }
+
+        if (+response.status === 500) {
+          setData([]);
+          setRobotStatus("error");
         }
 
         const result = await response.json();
@@ -298,37 +309,37 @@ export default function Home() {
       </div>
 
       {filteredData.length > 0 ? (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredData.map((item) => (
-          <Card
-            key={item.number}
-            isSelectionMode={isSelectionMode}
-            isSelected={selectedUnitilizers.includes(item.unitilizer)}
-            onSelect={() => turnSelectedUnit(item.unitilizer)}
-            date={item.date}
-            destination={item.destination}
-            objects={item.objects}
-            quantity={item.objects.quantity}
-            unitilizer={item.unitilizer}
-            number={item.number}
-          />
-        ))}
-      </div>
-    ) : (
-      <p className="text-center mt-32 text-xl text-white/60">
-        {
-          data.length === 0 
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredData.map((item) => (
+            <Card
+              key={item.number}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedUnitilizers.includes(item.unitilizer)}
+              onSelect={() => turnSelectedUnit(item.unitilizer)}
+              date={item.date}
+              destination={item.destination}
+              objects={item.objects}
+              quantity={item.objects.quantity}
+              unitilizer={item.unitilizer}
+              number={item.number}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center mt-32 text-xl text-white/60">
+          {data.length === 0
             ? `Não há nada por aqui...`
-            : `Nenhum unitilizador encontrado para "${searchTerm}"`
-        }
-      </p>
-    )}
+            : `Nenhum unitilizador encontrado para "${searchTerm}"`}
+        </p>
+      )}
 
-    {
-      unitModalIsOpen && (
-        <AvaliableUnit setIsModalOpenFn={setUnitModalIsOpen} token={token} opennedData={data}/>
-      )
-    }
+      {unitModalIsOpen && (
+        <AvaliableUnit
+          setIsModalOpenFn={setUnitModalIsOpen}
+          token={token}
+          opennedData={data}
+        />
+      )}
     </div>
   );
 }
