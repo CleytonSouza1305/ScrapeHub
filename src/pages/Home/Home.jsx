@@ -6,6 +6,7 @@ import {
   LuCircleX,
   LuTriangleAlert,
 } from "react-icons/lu";
+import { FiLink } from "react-icons/fi";
 import { IoMdRefresh, IoMdCloseCircle } from "react-icons/io";
 import Loading from "../../Loading";
 import StatCard from "./components/StatCard";
@@ -35,13 +36,15 @@ export default function Home() {
 
   const [unitModalIsOpen, setUnitModalIsOpen] = useState(false);
 
-  const validArr = data || [];
+  const validArr = data ?? [];
 
   const filteredData = validArr.filter(
     (item) =>
-      item.unitilizer &&
-      item.unitilizer.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      item.unitizador &&
+      item.unitizador.toLowerCase().includes(searchTerm.toLowerCase()),
+  ).toReversed()
+
+  console.log(filteredData)
 
   async function closeUnitFn() {
     setIsLoading(true);
@@ -136,7 +139,7 @@ export default function Home() {
   }, [token, unitilizerCount]);
 
   const totalObjects = data.reduce(
-    (acc, curr) => acc + curr.objects.quantity,
+    (acc, curr) => acc + (curr.itens ? curr.itens?.length : 0),
     0,
   );
   const totalUnitilizers = data.length;
@@ -202,6 +205,14 @@ export default function Home() {
                 content={"Fechar Unitilizador"}
                 icon={<IoMdCloseCircle />}
                 fn={() => setIsSelectionMode(true)}
+                txtColor={"text-white"}
+              />
+
+              <Button
+                bgColor={"bg-[#7a7a79]"}
+                content={"Víncular objeto à mala"}
+                icon={<FiLink />}
+                fn={() => alert("Mostrar total de objetos")}
                 txtColor={"text-white"}
               />
             </>
@@ -310,20 +321,23 @@ export default function Home() {
 
       {filteredData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredData.map((item) => (
+          {filteredData.map((item) => {
+            const quantity = item.itens ? item.itens.length : 0
+            return (
             <Card
-              key={item.number}
+              key={item.id}
               isSelectionMode={isSelectionMode}
-              isSelected={selectedUnitilizers.includes(item.unitilizer)}
-              onSelect={() => turnSelectedUnit(item.unitilizer)}
-              date={item.date}
-              destination={item.destination}
-              objects={item.objects}
-              quantity={item.objects.quantity}
-              unitilizer={item.unitilizer}
-              number={item.number}
+              isSelected={selectedUnitilizers.includes(item.unitizador)}
+              onSelect={() => turnSelectedUnit(item.unitizador)}
+              date={item.data}
+              destination={item.plano}
+              objects={item?.itens ?? []}
+              quantity={quantity}
+              unitilizer={item.unitizador}
+              number={item.posicao}
             />
-          ))}
+          )
+          })}
         </div>
       ) : (
         <p className="text-center mt-32 text-xl text-white/60">

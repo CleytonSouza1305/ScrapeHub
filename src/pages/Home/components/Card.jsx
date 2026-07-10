@@ -58,12 +58,12 @@ export default function Card({
             Etiquetas:
           </p>
           <ul className="space-y-2">
-            {objects.data.slice(0, 4).map((code) => (
+            {objects.slice(0, 4).map((i) => (
               <li
-                key={code}
+                key={i.id}
                 className="bg-white/5 rounded px-3 py-2 text-sm font-mono text-white/80 border border-white/5"
               >
-                {code}
+                {i.item}
               </li>
             ))}
           </ul>
@@ -103,12 +103,12 @@ export default function Card({
             </div>
 
             <div className="p-5 overflow-y-auto flex-1 space-y-2 scrollbar-none">
-              {objects.data.map((code) => (
+              {objects.map((i) => (
                 <div
-                  key={code}
+                  key={i.id}
                   className="bg-white/5 rounded px-3 py-2 text-sm font-mono text-white/90 border border-white/5"
                 >
-                  {code}
+                  {i.item}
                 </div>
               ))}
             </div>

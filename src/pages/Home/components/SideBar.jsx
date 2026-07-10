@@ -1,4 +1,4 @@
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import { LuUserCog, LuLayoutDashboard, LuSettings } from "react-icons/lu";
 
@@ -6,6 +6,7 @@ const fallbackId = Math.floor(1000 + Math.random() * 9000);
 
 export default function SideBar({ isOpen, setIsOpen }) {
   const user = useOutletContext();
+  const navigate = useNavigate()
 
   const firstLetter = (user?.username || "U").charAt(0).toUpperCase();
 
@@ -62,7 +63,7 @@ export default function SideBar({ isOpen, setIsOpen }) {
         </div>
 
         <button 
-          onClick={() => alert("Abrir modal de edição...")}
+          onClick={() => navigate(`/update/${user?.id}`)}
           className="p-2 cursor-pointer text-white/30 hover:text-[#8b82f6] hover:bg-[#5046E7]/10 rounded-lg transition-all duration-200 shrink-0"
           title="Editar Perfil"
         >
