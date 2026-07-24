@@ -14,6 +14,14 @@ export default function Card({
   onSelect,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const d = new Date(date);
+  const openDate = d.toLocaleDateString("pt-BR");
+
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+
+  const reformatedDate = `${openDate} - ${hours}h ${minutes}m`;
+
   return (
     <>
       <div
@@ -37,19 +45,20 @@ export default function Card({
               </span>
             )}
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-white/60 text-sm flex items-center gap-2">
-              <LuMapPin className="text-white/40" />
-              {destination}
+          <div className="flex items-start justify-between gap-4 w-full">
+            <p className="text-white/60 text-sm flex items-start gap-4">
+              <LuMapPin className="text-white/40 mt-0.5 shrink-0" />
+              <span>{destination}</span>
             </p>
-            <p className="text-[#5046E7] text-lg flex items-center gap-2">
+
+            <p className="text-[#5046E7] text-lg flex items-center gap-2 shrink-0">
               <LuBarcode />
               {number}
             </p>
           </div>
           <p className="text-white/40 text-xs flex items-center gap-2 mt-1">
             <LuCalendar />
-            {date}
+            {reformatedDate}
           </p>
         </div>
 
@@ -68,7 +77,7 @@ export default function Card({
             ))}
           </ul>
 
-          {!isSelectionMode && objects.quantity > 4 && (
+          {!isSelectionMode && objects.length > 4 && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -76,7 +85,7 @@ export default function Card({
               }}
               className="w-full mt-4 text-sm text-[#5046E7] hover:text-white transition-colors cursor-pointer font-medium"
             >
-              + Ver mais {objects.quantity - 4} objetos
+              + Ver mais {objects.length - 4} objetos
             </button>
           )}
         </div>

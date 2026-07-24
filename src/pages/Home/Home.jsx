@@ -20,7 +20,7 @@ import { useOutletContext } from "react-router-dom";
 
 export default function Home() {
   const user = useOutletContext();
-  console.log(user)
+  console.log(user);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   const [data, setData] = useState([]);
@@ -41,10 +41,28 @@ export default function Home() {
   const filteredData = validArr.filter(
     (item) =>
       item.unitizador &&
-      item.unitizador.toLowerCase().includes(searchTerm.toLowerCase()),
-  ).toReversed()
+      item.unitizador.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.plano.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  console.log(filteredData)
+  filteredData.sort((a, b) => {
+    const numA = Number(a.posicao);
+    const numB = Number(b.posicao);
+
+    const validoA = !isNaN(numA);
+    const validoB = !isNaN(numB);
+
+    if (validoA && validoB) {
+      return numA - numB;
+    }
+
+    if (validoA && !validoB) return -1;
+
+    if (!validoA && validoB) return 1;
+
+    // Se ambos forem textos (ex: "4DGR" e "29DGR"), compara como string pura
+    return String(a.posicao).localeCompare(String(b.posicao));
+  });
 
   async function closeUnitFn() {
     setIsLoading(true);
@@ -59,12 +77,12 @@ export default function Home() {
           body: JSON.stringify({ unitilizers: selectedUnitilizers }),
         });
 
-        const data = await response.json()
+        const data = await response.json();
         if (!response.ok) {
           throw new Error("Falha ao enviar os dados...", data.message);
         }
         setIsSelectionMode(false);
-        setUnitilizerCount((v) => v + 1)
+        setUnitilizerCount((v) => v + 1);
       }
     } catch (e) {
       console.error("Erro ao fechar unitilizador:", e);
@@ -162,7 +180,7 @@ export default function Home() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <StatCard
-          message={"Total de Itens Disponíveis"}
+          message={"Objetos Lidos"}
           icon={<FaBoxOpen className="text-3xl" />}
           colorClasses={"bg-[#5046E7]/20 text-[#5046E7]"}
           dynamicData={totalObjects}
@@ -176,7 +194,7 @@ export default function Home() {
         />
 
         <StatCard
-          message={"Itens Enviados Hoje"}
+          message={"Enviados Este Mês"}
           icon={<LuPackageCheck className="text-3xl" />}
           colorClasses={"bg-teal-500/20 text-teal-400"}
           dynamicData={objectsToday}
@@ -254,31 +272,31 @@ export default function Home() {
 
               <Button
                 bgColor={
-                  selectedUnitilizers.length === data.length
+                  selectedUnitilizers.length === filteredData.length
                     ? "bg-[#5046E7]/20 border border-[#5046E7]/40 text-[#5046E7] hover:bg-[#5046E7]/30 transition-all cursor-pointer"
                     : "bg-[#5046E7] hover:bg-[#5046E7]/90 active:scale-95 transition-all cursor-pointer shadow-[0_0_15px_rgba(80,70,231,0.2)]"
                 }
                 content={
-                  selectedUnitilizers.length === data.length
+                  selectedUnitilizers.length === filteredData.length
                     ? "Desmarcar Todos"
                     : "Selecionar Tudo"
                 }
                 icon={
-                  selectedUnitilizers.length === data.length ? (
+                  selectedUnitilizers.length === filteredData.length ? (
                     <MdCheckBox />
                   ) : (
                     <MdCheckBoxOutlineBlank />
                   )
                 }
                 fn={() => {
-                  if (selectedUnitilizers.length === data.length) {
+                  if (selectedUnitilizers.length === filteredData.length) {
                     setSelectedUnitilizers([]);
                   } else {
-                    setSelectedUnitilizers(data.map((item) => item.unitilizer));
+                    setSelectedUnitilizers(filteredData.map((item) => item.unitizador));
                   }
                 }}
                 txtColor={
-                  selectedUnitilizers.length === data.length
+                  selectedUnitilizers.length === filteredData.length
                     ? "text-[#8b82f6]"
                     : "text-white"
                 }
@@ -316,32 +334,37 @@ export default function Home() {
       </div>
 
       <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-3">
-        <h2 className="text-xl font-semibold">Itens em Processamento</h2>
+        <h2 className="text-xl text-white/60 font-semibold">
+          Unitizadores encontrados: <span className="text-white/80">{filteredData.length}</span>
+        </h2>
       </div>
 
       {filteredData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredData.map((item) => {
-            const quantity = item.itens ? item.itens.length : 0
+            const quantity = item.itens ? item.itens.length : 0;
+            if (item.posicao === '9') {
+              console.log(item)
+            }
             return (
-            <Card
-              key={item.id}
-              isSelectionMode={isSelectionMode}
-              isSelected={selectedUnitilizers.includes(item.unitizador)}
-              onSelect={() => turnSelectedUnit(item.unitizador)}
-              date={item.data}
-              destination={item.plano}
-              objects={item?.itens ?? []}
-              quantity={quantity}
-              unitilizer={item.unitizador}
-              number={item.posicao}
-            />
-          )
+              <Card
+                key={item.id}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedUnitilizers.includes(item.unitizador)}
+                onSelect={() => turnSelectedUnit(item.unitizador)}
+                date={item.data}
+                destination={item.plano}
+                objects={item?.itens ?? []}
+                quantity={quantity}
+                unitilizer={item.unitizador}
+                number={item.posicao}
+              />
+            );
           })}
         </div>
       ) : (
         <p className="text-center mt-32 text-xl text-white/60">
-          {data.length === 0
+          {filteredData.length === 0
             ? `Não há nada por aqui...`
             : `Nenhum unitilizador encontrado para "${searchTerm}"`}
         </p>

@@ -9,6 +9,8 @@ export default function Update() {
   console.log(user)
 
   const [name, setName] = useState(user?.username ? user?.username : '')
+  const [email, setEmail] = useState(user?.email ? user?.email : '')
+  const world = user?.username.split('')[0]
 
   const handleInput = (ev) => {
     console.log('to aqui')
@@ -28,7 +30,7 @@ export default function Update() {
           <div className="flex items-center gap-6 pb-6 border-b border-white/5">
             <div className="relative group cursor-pointer">
               <div className="w-20 h-20 rounded-full bg-[#5046E7] flex items-center justify-center text-2xl font-bold text-white shadow-lg transition-transform group-hover:scale-102 duration-200">
-                U
+                {world}
               </div>
               <div className="absolute bottom-0 right-0 p-2 bg-[#5046E7] hover:bg-[#4338ca] text-white rounded-full shadow-md transition-all duration-200 group-hover:scale-110">
                 <LuCamera className="text-xs" />
@@ -48,9 +50,20 @@ export default function Update() {
               labelContent={'Seu nome'}
               placeholder={'Novo nome...'}
               value={name}
+              fn={setName}
               Icon={FaUser}
             />
 
+            <InputGroup 
+              type={'text'}
+              id={'email'}
+              name={'email'}
+              labelContent={'Seu email'}
+              placeholder={'Novo email...'}
+              value={email}
+              fn={setEmail}
+              Icon={FaUser}
+            />
           </div>
 
           {/* Rodapé de Ações */}

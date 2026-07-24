@@ -51,9 +51,55 @@ export default function AvaliableUnit({
   }, [token, opennedData]);
 
   async function openUnitis() {
-    const unitisMsg = selectedTotal.join(", ")
-    alert(`Deseja abrir:\n${unitisMsg}`)
+  // 1. Valida se existem itens selecionados
+  if (!selectedTotal || selectedTotal.length === 0) {
+    alert("Nenhum unitizador selecionado.");
+    return;
   }
+
+  const unitisMsg = selectedTotal.join(", ");
+  
+  // Usamos window.confirm para o usuário poder aceitar ou cancelar
+  const confirmou = window.confirm(`Deseja abrir os seguintes unitizadores?\n\n${unitisMsg}`);
+  if (!confirmou) return;
+
+  try {
+    // 2. Recupera o Bearer Token (ajuste 'token' para a chave que você usa no localStorage/sessionStorage)
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Sessão não encontrada ou expirada. Faça login novamente.");
+      return;
+    }
+
+    // 3. Chamada para a rota do seu backend local
+    // Substitua '3000' pela porta em que seu servidor Express está rodando
+    const response = await fetch("http://localhost:2200/api/scrapp/unitilizers/dowload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        positions: selectedTotal,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Erro no servidor: status ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("[FRONTEND] Sucesso:", data);
+
+    alert("Unitizadores enviados para processamento com sucesso!");
+
+  } catch (error) {
+    console.error("[FRONTEND] Erro na requisição:", error);
+    alert(`Erro ao abrir unitizadores: ${error.message}`);
+  }
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -78,8 +124,9 @@ export default function AvaliableUnit({
         <div className="p-5 overflow-y-auto flex-1 space-y-2 scrollbar-none">
           {unitis.map((u) => {
             const isOpen = opennedData.filter(
-              (e) => e.number?.toString() === u.position?.toString(),
+              (e) => e.posicao?.toString() === u.position?.toString(),
             );
+
             if (isOpen.length > 0) return null;
 
             return (
@@ -88,11 +135,8 @@ export default function AvaliableUnit({
                 className="bg-white/5 rounded px-3 py-2 text-sm font-mono text-white/90 border border-white/5 flex gap-8 items-center justify-between"
               >
                 <DivChild type={"Destino"} value={u.direction} />
-
                 <DivChild type={"Formato"} value={u.format} />
-
                 <DivChild type={"Posição"} value={u.position} />
-
                 <DivChild type={"Categoria"} value={u.category} />
 
                 <input
@@ -163,7 +207,7 @@ export default function AvaliableUnit({
             onClick={openUnitis}
           >
             {
-              selectedTotal < 1 ? "Selecione um unitilizador para iniciar" : "Confirmar abertura"
+              selectedTotal < 1 ? "Selecione os unitilizadores para abrir" : "Confirmar abertura"
             }
           </button>
         </div>

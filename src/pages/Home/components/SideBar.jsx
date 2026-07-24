@@ -1,12 +1,13 @@
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import { LuUserCog, LuLayoutDashboard, LuSettings } from "react-icons/lu";
+import { BsUpcScan } from "react-icons/bs";
 
 const fallbackId = Math.floor(1000 + Math.random() * 9000);
 
 export default function SideBar({ isOpen, setIsOpen }) {
   const user = useOutletContext();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const firstLetter = (user?.username || "U").charAt(0).toUpperCase();
 
@@ -19,7 +20,7 @@ export default function SideBar({ isOpen, setIsOpen }) {
     >
       <div>
         <div className="flex justify-between items-center mb-8">
-          <button 
+          <button
             onClick={() => setIsOpen(false)}
             className="p-2 -ml-2 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 cursor-pointer"
           >
@@ -35,10 +36,15 @@ export default function SideBar({ isOpen, setIsOpen }) {
           <p className="text-[11px] font-bold tracking-wider text-white/20 uppercase pl-3 mb-2">
             Navegação
           </p>
-          
+
           <button className="flex items-center gap-3 w-full p-3 text-sm font-medium text-[#8b82f6] bg-[#5046E7]/10 border border-[#5046E7]/20 rounded-xl transition-all">
             <LuLayoutDashboard className="text-lg" />
-            Visão Geral
+            Unitizadores
+          </button>
+
+          <button className="flex items-center gap-3 cursor-pointer w-full p-3 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+            <BsUpcScan className="text-lg" />
+            Ler Código
           </button>
 
           <button className="flex items-center gap-3 cursor-pointer w-full p-3 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -58,11 +64,13 @@ export default function SideBar({ isOpen, setIsOpen }) {
             <span className="text-sm font-medium text-gray-200 truncate">
               {user?.username || `user-${fallbackId}`}
             </span>
-            <span className="text-xs text-white/40 truncate">{user?.email}</span>
+            <span className="text-xs text-white/40 truncate">
+              {user?.email}
+            </span>
           </div>
         </div>
 
-        <button 
+        <button
           onClick={() => navigate(`/update/${user?.id}`)}
           className="p-2 cursor-pointer text-white/30 hover:text-[#8b82f6] hover:bg-[#5046E7]/10 rounded-lg transition-all duration-200 shrink-0"
           title="Editar Perfil"
