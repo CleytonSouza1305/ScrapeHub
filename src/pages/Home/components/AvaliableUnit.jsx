@@ -1,6 +1,7 @@
 import { LuX } from "react-icons/lu";
 import { BiSolidSelectMultiple } from "react-icons/bi";
 import { useEffect, useState } from "react";
+import Modal from "./Modal";
 
 function DivChild({ type, value }) {
   return (
@@ -19,6 +20,9 @@ export default function AvaliableUnit({
   const [numberInput, setNumberInput] = useState(1);
   const [unitis, setUnitis] = useState([]);
   const [selectedTotal, setSelectedTotal] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("info");
 
   useEffect(() => {
     if (!token) return;
@@ -51,167 +55,189 @@ export default function AvaliableUnit({
   }, [token, opennedData]);
 
   async function openUnitis() {
-  // 1. Valida se existem itens selecionados
-  if (!selectedTotal || selectedTotal.length === 0) {
-    alert("Nenhum unitizador selecionado.");
-    return;
-  }
-
-  const unitisMsg = selectedTotal.join(", ");
-  
-  // Usamos window.confirm para o usuário poder aceitar ou cancelar
-  const confirmou = window.confirm(`Deseja abrir os seguintes unitizadores?\n\n${unitisMsg}`);
-  if (!confirmou) return;
-
-  try {
-    // 2. Recupera o Bearer Token (ajuste 'token' para a chave que você usa no localStorage/sessionStorage)
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Sessão não encontrada ou expirada. Faça login novamente.");
+    if (!selectedTotal || selectedTotal.length === 0) {
+      setModalMessage(
+        "É preciso informar pelo menos um unitizador para efetuar a abertura.",
+      );
+      setShowModal(true);
       return;
     }
 
-    // 3. Chamada para a rota do seu backend local
-    // Substitua '3000' pela porta em que seu servidor Express está rodando
-    const response = await fetch("http://localhost:2200/api/scrapp/unitilizers/dowload", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        positions: selectedTotal,
-      }),
-    });
+    const directionsMessage = selectedTotal
+      .map((item) => `${item.position} - ${item.direction} (${item.category})`)
+      .join("\n");
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Erro no servidor: status ${response.status}`);
-    }
+    setModalMessage(
+      `Deseja abrir os seguintes unitizadores:\n\n${directionsMessage}`,
+    );
+    setModalType("success");
+    setShowModal(true);
 
-    const data = await response.json();
-    console.log("[FRONTEND] Sucesso:", data);
+    // try {
+    //   // 2. Recupera o Bearer Token (ajuste 'token' para a chave que você usa no localStorage/sessionStorage)
+    //   const token = localStorage.getItem("token");
 
-    alert("Unitizadores enviados para processamento com sucesso!");
+    //   if (!token) {
+    //     alert("Sessão não encontrada ou expirada. Faça login novamente.");
+    //     return;
+    //   }
 
-  } catch (error) {
-    console.error("[FRONTEND] Erro na requisição:", error);
-    alert(`Erro ao abrir unitizadores: ${error.message}`);
+    //   // 3. Chamada para a rota do seu backend local
+    //   // Substitua '3000' pela porta em que seu servidor Express está rodando
+    //   const response = await fetch(
+    //     "http://localhost:2200/api/scrapp/unitilizers/dowload",
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //       body: JSON.stringify({
+    //         positions: selectedTotal,
+    //       }),
+    //     },
+    //   );
+
+    //   if (!response.ok) {
+    //     const errorData = await response.json().catch(() => ({}));
+    //     throw new Error(
+    //       errorData.message || `Erro no servidor: status ${response.status}`,
+    //     );
+    //   }
+
+    //   const data = await response.json();
+    //   console.log("[FRONTEND] Sucesso:", data);
+
+    //   alert("Unitizadores enviados para processamento com sucesso!");
+    // } catch (error) {
+    //   console.error("[FRONTEND] Erro na requisição:", error);
+    //   alert(`Erro ao abrir unitizadores: ${error.message}`);
+    // }
   }
-}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#121625] border border-white/10 rounded-xl w-auto max-h-[80vh] flex flex-col shadow-2xl animate-fade-in">
-        <div className="p-5 border-b border-white/5 flex items-center justify-between">
-          <div>
-            <h4 className="text-lg font-bold text-[#5046E7]">
-              Unitilizadores disponíveis
-            </h4>
-            <p className="text-xs text-white/40 mt-0.5">
-              Total Selecionado: {selectedTotal.length}
-            </p>
+      {!showModal ? (
+        <div className="bg-[#121625] border border-white/10 rounded-xl w-auto max-h-[80vh] flex flex-col shadow-2xl animate-fade-in">
+          <div className="p-5 border-b border-white/5 flex items-center justify-between">
+            <div>
+              <h4 className="text-lg font-bold text-[#5046E7]">
+                Unitilizadores disponíveis
+              </h4>
+              <p className="text-xs text-white/40 mt-0.5">
+                Total Selecionado: {selectedTotal.length}
+              </p>
+            </div>
+            <button
+              onClick={() => setIsModalOpenFn(false)}
+              className="cursor-pointer p-1 text-white/50 hover:text-white"
+            >
+              <LuX className="text-xl" />
+            </button>
           </div>
-          <button
-            onClick={() => setIsModalOpenFn(false)}
-            className="cursor-pointer p-1 text-white/50 hover:text-white"
-          >
-            <LuX className="text-xl" />
-          </button>
-        </div>
 
-        <div className="p-5 overflow-y-auto flex-1 space-y-2 scrollbar-none">
-          {unitis.map((u) => {
-            const isOpen = opennedData.filter(
-              (e) => e.posicao?.toString() === u.position?.toString(),
-            );
+          <div className="p-5 overflow-y-auto flex-1 space-y-2 scrollbar-none">
+            {unitis.map((u) => {
+              const isOpen = opennedData.filter(
+                (e) => e.posicao?.toString() === u.position?.toString(),
+              );
 
-            if (isOpen.length > 0) return null;
+              if (isOpen.length > 0) return null;
 
-            return (
-              <div
-                key={u.position}
-                className="bg-white/5 rounded px-3 py-2 text-sm font-mono text-white/90 border border-white/5 flex gap-8 items-center justify-between"
-              >
-                <DivChild type={"Destino"} value={u.direction} />
-                <DivChild type={"Formato"} value={u.format} />
-                <DivChild type={"Posição"} value={u.position} />
-                <DivChild type={"Categoria"} value={u.category} />
+              const isSelected = selectedTotal.some(
+                (e) => e.position === u.position,
+              );
 
-                <input
-                  value={numberInput}
-                  type="text"
-                  className="bg-white/10 text-white rounded px-2 py-1 text-center w-10 h-10"
-                  onChange={(e) => {
-                    const newValue = e.currentTarget.value.trim();
-                    if (newValue === "") {
-                      setNumberInput("");
-                      return;
-                    }
+              return (
+                <div
+                  key={u.position}
+                  className="bg-white/5 rounded px-3 py-2 text-sm font-mono text-white/90 border border-white/5 flex gap-8 items-center justify-between"
+                >
+                  <DivChild type={"Destino"} value={u.direction} />
+                  <DivChild type={"Formato"} value={u.format} />
+                  <DivChild type={"Posição"} value={u.position} />
+                  <DivChild type={"Categoria"} value={u.category} />
 
-                    const value = Number(newValue);
+                  <input
+                    value={numberInput}
+                    type="text"
+                    className="bg-white/10 text-white rounded px-2 py-1 text-center w-10 h-10"
+                    onChange={(e) => {
+                      const newValue = e.currentTarget.value.trim();
+                      if (newValue === "") {
+                        setNumberInput("");
+                        return;
+                      }
 
-                    if (isNaN(value)) return;
+                      const value = Number(newValue);
 
-                    if (value > 100) {
-                      setNumberInput(100);
-                    } else if (value < 1) {
-                      setNumberInput(1);
-                    } else {
-                      setNumberInput(value);
-                    }
-                  }}
-                  onBlur={() => {
-                    if (numberInput === "") {
-                      setNumberInput(1);
-                    }
-                  }}
-                />
+                      if (isNaN(value)) return;
 
-                <BiSolidSelectMultiple
-                  className={`
+                      if (value > 100) {
+                        setNumberInput(100);
+                      } else if (value < 1) {
+                        setNumberInput(1);
+                      } else {
+                        setNumberInput(value);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (numberInput === "") {
+                        setNumberInput(1);
+                      }
+                    }}
+                  />
+
+                  <BiSolidSelectMultiple
+                    className={`
                     cursor-pointer w-7 h-7
-                    ${selectedTotal.includes(u.position) ? `text-green-500 hover:text-red-500` : `text-white/70 hover:text-green-500`} 
+                    ${isSelected ? `text-green-500 hover:text-red-500` : `text-white/70 hover:text-green-500`} 
                     transition duration-300
                     `}
-                  onClick={() => {
-                    if (selectedTotal.includes(u.position)) {
-                      setSelectedTotal((current) =>
-                        current.filter((e) => e !== u.position),
-                      );
-                      return;
-                    }
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedTotal((current) =>
+                          current.filter((e) => e.position !== u.position),
+                        );
+                        return;
+                      }
 
-                    setSelectedTotal((current) => [...current, u.position]);
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
+                      setSelectedTotal((current) => [...current, u]);
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
 
-        <div className="p-4 bg-white/2 border-t border-white/5 flex items-center gap-4">
-          <button
-            onClick={() => setIsModalOpenFn(false)}
-            className="cursor-pointer px-4 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-medium rounded-md text-white w-full"
-          >
-            Fechar Janela
-          </button>
+          <div className="p-4 bg-white/2 border-t border-white/5 flex items-center gap-4">
+            <button
+              onClick={() => setIsModalOpenFn(false)}
+              className="cursor-pointer px-4 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-medium rounded-md text-white w-full"
+            >
+              Fechar Janela
+            </button>
 
-          <button
-            className="px-4 py-2 text-sm font-medium rounded-md text-white w-full transition-colors
+            <button
+              className="px-4 py-2 text-sm font-medium rounded-md text-white w-full transition-colors
              bg-[#5046E7] hover:bg-[#4035cd] cursor-pointer
              disabled:bg-white/5 disabled:text-white/30 disabled:border disabled:border-white/5 disabled:cursor-not-allowed"
-            disabled={selectedTotal < 1}
-            onClick={openUnitis}
-          >
-            {
-              selectedTotal < 1 ? "Selecione os unitilizadores para abrir" : "Confirmar abertura"
-            }
-          </button>
+              // disabled={selectedTotal < 1}
+              onClick={openUnitis}
+            >
+              {selectedTotal < 1
+                ? "Selecione os unitilizadores para abrir"
+                : "Confirmar abertura"}
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <Modal
+          message={modalMessage}
+          showModal={setShowModal}
+          type={modalType}
+        />
+      )}
     </div>
   );
 }
