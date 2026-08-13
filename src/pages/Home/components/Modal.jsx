@@ -1,4 +1,7 @@
-import { FiAlertTriangle, FiCheckCircle, FiX } from "react-icons/fi";
+import { BsCheck2Circle } from "react-icons/bs";
+import { MdOutlineReportGmailerrorred } from "react-icons/md";
+import { ImSpinner11 } from "react-icons/im";
+import { TiWarningOutline } from "react-icons/ti";
 
 function Button({ text, fn, variant = "primary" }) {
   const baseStyles =
@@ -20,30 +23,39 @@ function Button({ text, fn, variant = "primary" }) {
   );
 }
 
-export default function Modal({ message, type, showModal }) {
-  function confirmFn() {
-    alert("Confirmado...");
-  }
+export default function Modal({ message, type, showModal, confirmFN }) {
+  const typeConfig = {
+    success: {
+      style: `bg-green-600 text-white hover:bg-green-700 transition duration-200`,
+      label: "CONCLUIR",
+      Icon: BsCheck2Circle
+    },
+    error: {
+      style: `bg-red-600 text-white hover:bg-red-700 transition duration-200`,
+      label: "VOLTAR",
+      Icon: MdOutlineReportGmailerrorred
+    },
+    processing: {
+      style: `bg-[#5046E7] text-[#5046E7] hover:bg-[#3831a3] transition duration-200`,
+      label: "PROCESSAR DADOS",
+      Icon: ImSpinner11
+    },
+    warning: {
+      style: `bg-amber-500 text-white hover:bg-amber-700 transition duration-200`,
+      label: "OK",
+      Icon: TiWarningOutline
+    },
+  };
 
-  const isInfoType = type === "info";
-  const isErrorType = type === "error";
-  const isSuccessType = type === "success";
-
-  const iconConfig = isErrorType
-    ? { Icon: FiX, bg: "bg-red-100", fg: "text-red-600" }
-    : isInfoType
-      ? { Icon: FiAlertTriangle, bg: "bg-amber-100", fg: "text-amber-600" }
-      : isSuccessType
-        ? { Icon: FiCheckCircle, bg: "bg-emerald-100", fg: "text-emerald-600" }
-        : null;
+  const dinamicType = typeConfig[type] ?? null
 
   return (
     <div className="bg-white/90 w-auto p-5 text-black rounded-sm">
-      {iconConfig && (
+      {dinamicType && (
         <span
-          className={`inline-flex items-center justify-center w-11 h-11 rounded-full ${iconConfig.bg}`}
+          className={`inline-flex items-center justify-center w-11 h-11 rounded-full ${dinamicType.split(" ")[0]}`}
         >
-          <iconConfig.Icon className={`w-5 h-5 ${iconConfig.fg}`} />
+          <dinamicType.Icon className={`w-5 h-5`} />
         </span>
       )}
       <p className="whitespace-pre-line">{message}</p>

@@ -20,6 +20,7 @@ export default function AvaliableUnit({
   const [numberInput, setNumberInput] = useState(1);
   const [unitis, setUnitis] = useState([]);
   const [selectedTotal, setSelectedTotal] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("info");
@@ -54,11 +55,60 @@ export default function AvaliableUnit({
     getAvaliableUnitis();
   }, [token, opennedData]);
 
-  async function openUnitis() {
+  async function confirmFn() {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setModalMessage(
+          "Erro ao executar operação, tente novamente mais tarde.",
+        );
+        setModalType("error");
+        setShowModal(true);
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:2200/api/scrapp/unitilizers/dowload",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            positions: selectedTotal,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Erro no servidor: status ${response.status}`,
+        );
+      }
+
+      const data = await response.json();
+      console.log("[FRONTEND] Sucesso:", data);
+
+      setModalMessage("Abertos com sucesso");
+      setModalType("success");
+      setShowModal(true);
+    } catch (e) {
+      setModalMessage(e.message);
+      setModalType("error");
+      setShowModal(true);
+    }
+  }
+
+  function openUnitis() {
     if (!selectedTotal || selectedTotal.length === 0) {
       setModalMessage(
         "É preciso informar pelo menos um unitizador para efetuar a abertura.",
       );
+
+      setModalType("warning");
       setShowModal(true);
       return;
     }
@@ -70,49 +120,12 @@ export default function AvaliableUnit({
     setModalMessage(
       `Deseja abrir os seguintes unitizadores:\n\n${directionsMessage}`,
     );
-    setModalType("success");
+    setModalType("processing");
     setShowModal(true);
 
-    // try {
-    //   // 2. Recupera o Bearer Token (ajuste 'token' para a chave que você usa no localStorage/sessionStorage)
-    //   const token = localStorage.getItem("token");
-
-    //   if (!token) {
-    //     alert("Sessão não encontrada ou expirada. Faça login novamente.");
-    //     return;
-    //   }
-
-    //   // 3. Chamada para a rota do seu backend local
-    //   // Substitua '3000' pela porta em que seu servidor Express está rodando
-    //   const response = await fetch(
-    //     "http://localhost:2200/api/scrapp/unitilizers/dowload",
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //       body: JSON.stringify({
-    //         positions: selectedTotal,
-    //       }),
-    //     },
-    //   );
-
-    //   if (!response.ok) {
-    //     const errorData = await response.json().catch(() => ({}));
-    //     throw new Error(
-    //       errorData.message || `Erro no servidor: status ${response.status}`,
-    //     );
-    //   }
-
-    //   const data = await response.json();
-    //   console.log("[FRONTEND] Sucesso:", data);
-
-    //   alert("Unitizadores enviados para processamento com sucesso!");
-    // } catch (error) {
-    //   console.error("[FRONTEND] Erro na requisição:", error);
-    //   alert(`Erro ao abrir unitizadores: ${error.message}`);
-    // }
+    // setModalMessage();
+    // setModalType();
+    // setShowModal(true);
   }
 
   return (
@@ -236,6 +249,7 @@ export default function AvaliableUnit({
           message={modalMessage}
           showModal={setShowModal}
           type={modalType}
+          confirmFn={confirmFn}
         />
       )}
     </div>
