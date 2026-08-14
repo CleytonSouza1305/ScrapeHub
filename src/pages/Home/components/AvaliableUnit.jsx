@@ -16,6 +16,7 @@ export default function AvaliableUnit({
   setIsModalOpenFn,
   token,
   opennedData,
+  reloadFn
 }) {
   const [numberInput, setNumberInput] = useState(1);
   const [unitis, setUnitis] = useState([]);
@@ -23,7 +24,7 @@ export default function AvaliableUnit({
 
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [modalType, setModalType] = useState("info");
+  const [modalType, setModalType] = useState("warning");
 
   useEffect(() => {
     if (!token) return;
@@ -68,6 +69,8 @@ export default function AvaliableUnit({
         return;
       }
 
+      const positions = selectedTotal.map((i) => i.position)
+
       const response = await fetch(
         "http://localhost:2200/api/scrapp/unitilizers/dowload",
         {
@@ -77,7 +80,7 @@ export default function AvaliableUnit({
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            positions: selectedTotal,
+            positions
           }),
         },
       );
@@ -88,14 +91,17 @@ export default function AvaliableUnit({
           errorData.message || `Erro no servidor: status ${response.status}`,
         );
       }
-
-      const data = await response.json();
-      console.log("[FRONTEND] Sucesso:", data);
+      
+      const data = await response.json()
+      console.log(data)
 
       setModalMessage("Abertos com sucesso");
       setModalType("success");
       setShowModal(true);
+
+      setSelectedTotal([])
     } catch (e) {
+      console.log(e)
       setModalMessage(e.message);
       setModalType("error");
       setShowModal(true);
@@ -235,7 +241,7 @@ export default function AvaliableUnit({
               className="px-4 py-2 text-sm font-medium rounded-md text-white w-full transition-colors
              bg-[#5046E7] hover:bg-[#4035cd] cursor-pointer
              disabled:bg-white/5 disabled:text-white/30 disabled:border disabled:border-white/5 disabled:cursor-not-allowed"
-              // disabled={selectedTotal < 1}
+              disabled={selectedTotal < 1}
               onClick={openUnitis}
             >
               {selectedTotal < 1
@@ -250,6 +256,7 @@ export default function AvaliableUnit({
           showModal={setShowModal}
           type={modalType}
           confirmFn={confirmFn}
+          reloadPageFn={reloadFn}
         />
       )}
     </div>

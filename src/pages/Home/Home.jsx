@@ -92,6 +92,7 @@ export default function Home() {
   }
 
   useEffect(() => {
+    setUnitModalIsOpen(false)
     async function getObjectsToday() {
       try {
         const response = await fetch(
@@ -375,6 +376,7 @@ export default function Home() {
           setIsModalOpenFn={setUnitModalIsOpen}
           token={token}
           opennedData={data}
+          reloadFn={setUnitilizerCount}
         />
       )}
     </div>
