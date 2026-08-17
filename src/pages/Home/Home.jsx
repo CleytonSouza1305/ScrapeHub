@@ -85,14 +85,13 @@ export default function Home() {
         setUnitilizerCount((v) => v + 1);
       }
     } catch (e) {
-      console.error("Erro ao fechar unitilizador:", e);
+      console.error("Erro ao fechar unitizador:", e);
     } finally {
       setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    setUnitModalIsOpen(false)
     async function getObjectsToday() {
       try {
         const response = await fetch(
@@ -213,7 +212,7 @@ export default function Home() {
             <>
               <Button
                 bgColor={"bg-[#18b81d]"}
-                content={"Abrir Unitilizador"}
+                content={"Abrir Unitizador"}
                 icon={<LuPackageOpen />}
                 fn={() => setUnitModalIsOpen(true)}
                 txtColor={"text-white"}
@@ -221,7 +220,7 @@ export default function Home() {
 
               <Button
                 bgColor={"bg-[#c92828]"}
-                content={"Fechar Unitilizador"}
+                content={"Fechar Unitizador"}
                 icon={<IoMdCloseCircle />}
                 fn={() => setIsSelectionMode(true)}
                 txtColor={"text-white"}
@@ -246,7 +245,7 @@ export default function Home() {
                 content={
                   selectedUnitilizers.length < 1
                     ? "Aguardando selecão..."
-                    : `Fechar ${selectedUnitilizers.length} ${selectedUnitilizers.length === 1 ? "Unitilizador" : "Unitilizadores"}`
+                    : `Fechar ${selectedUnitilizers.length} ${selectedUnitilizers.length === 1 ? "Unitizador" : "Unitizadores"}`
                 }
                 icon={
                   selectedUnitilizers.length < 1 ? (
@@ -324,7 +323,7 @@ export default function Home() {
           className="flex items-center gap-2 px-4 py-2 bg-[#5046E7] text-white rounded-md font-medium transition-all duration-300 shadow-[0_0_10px_rgba(80,70,231,0.2)] hover:shadow-[0_0_15px_rgba(80,70,231,0.5)] hover:bg-[#5046E7]/90 active:scale-95 cursor-pointer"
         >
           {isLoading ? (
-            <span>Buscando unitilizadores...</span>
+            <span>Buscando unitizadores...</span>
           ) : (
             <>
               <IoMdRefresh className="text-xl" />
@@ -367,7 +366,7 @@ export default function Home() {
         <p className="text-center mt-32 text-xl text-white/60">
           {filteredData.length === 0
             ? `Não há nada por aqui...`
-            : `Nenhum unitilizador encontrado para "${searchTerm}"`}
+            : `Nenhum unitizador encontrado para "${searchTerm}"`}
         </p>
       )}
 
