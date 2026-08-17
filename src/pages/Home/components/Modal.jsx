@@ -9,13 +9,25 @@ function Button({ text, fn, style, disabled }) {
     "px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm disabled:active:scale-100";
 
   return (
-    <button onClick={fn} disabled={disabled} className={`${baseStyles} ${style}`}>
+    <button
+      onClick={fn}
+      disabled={disabled}
+      className={`${baseStyles} ${style}`}
+    >
       {text}
     </button>
   );
 }
 
-export default function Modal({ message, type, showModal, confirmFn, reloadPageFn }) {
+export default function Modal({
+  message,
+  type,
+  showModal,
+  confirmFn,
+  reloadPageFn,
+}) {
+  const [details, setDetails] = useState(null);
+
   const typeConfig = {
     success: {
       iconBg: "bg-emerald-100",
@@ -28,7 +40,8 @@ export default function Modal({ message, type, showModal, confirmFn, reloadPageF
     error: {
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
-      solid: "bg-red-600 hover:bg-red-700 text-white focus-visible:ring-red-500",
+      solid:
+        "bg-red-600 hover:bg-red-700 text-white focus-visible:ring-red-500",
       label: "VOLTAR",
       Icon: MdOutlineReportGmailerrorred,
     },
@@ -57,7 +70,8 @@ export default function Modal({ message, type, showModal, confirmFn, reloadPageF
   const handleConfirm = async () => {
     setIsConfirming(true);
     try {
-      await confirmFn();
+      const data = await confirmFn();
+      setDetails(data ? data : null);
     } finally {
       setIsConfirming(false);
     }
@@ -67,29 +81,87 @@ export default function Modal({ message, type, showModal, confirmFn, reloadPageF
     "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus-visible:ring-gray-300 shadow-none";
 
   return (
-    <div className="bg-white w-full max-w-100px max-h-[85vh] flex flex-col text-black rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-y-auto flex items-start gap-4 p-6">
-        {dinamicType && (
-          <span
-            className={`inline-flex shrink-0 items-center justify-center w-12 h-12 rounded-full ${dinamicType.iconBg}`}
-          >
-            <dinamicType.Icon
-              className={`w-6 h-6 ${dinamicType.iconColor} ${
-                type === "processing" ? "animate-spin" : ""
-              }`}
-            />
-          </span>
+    <div className="bg-white min-w-132.5 w-auto max-h-[85vh] flex flex-col text-black rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+        <div className="w-full flex items-start gap-4 p-6">
+          {dinamicType && (
+            <span
+              className={`inline-flex shrink-0 items-center justify-center w-12 h-12 rounded-full ${dinamicType.iconBg}`}
+            >
+              <dinamicType.Icon
+                className={`w-6 h-6 ${dinamicType.iconColor} ${
+                  type === "processing" ? "animate-spin" : ""
+                }`}
+              />
+            </span>
+          )}
+          <p className="whitespace-pre-line text-lg leading-relaxed text-gray-700 pt-2.5 font-medium">
+            {message}
+          </p>
+        </div>
+
+        {details && (
+          <div className="p-4">
+            {details.oppeneds && details.oppeneds.length > 0 && (
+              <>
+                <p className="font-bold text-lg text-emerald-600 mb-4">
+                  Unitizadores abertos com sucesso
+                </p>
+                <div>
+                  {details.oppeneds.map((i, index) => {
+                    return (
+                      <p
+                        className="flex gap-2 items-center mt-2 mb-2"
+                        key={index}
+                      >
+                        <span className="bg-emerald-600 flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-semibold">
+                          {`${index + 1}`}
+                        </span>
+                        <span className="font-semibold text-[16px] text-gray-700">
+                          {i.message}
+                        </span>
+                      </p>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {details.error && details.error.length > 0 && (
+              <>
+                <p className="font-bold text-lg text-red-600 mb-4 mt-8">
+                  Unitizadores com erro
+                </p>
+                <div>
+                  {details.error.map((i, index) => {
+                    return (
+                      <p
+                        className="flex gap-2 items-center mt-2 mb-2"
+                        key={index}
+                      >
+                        <span className="bg-red-600 flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-semibold">
+                          {`${index + 1}`}
+                        </span>
+                        <span className="font-semibold text-[16px] text-gray-700">
+                          {i.message}
+                        </span>
+                      </p>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         )}
-        <p className="whitespace-pre-line text-lg leading-relaxed text-gray-700 pt-2.5 font-medium">
-          {message}
-        </p>
       </div>
 
       <div className="shrink-0 flex items-center justify-end gap-3 px-6 pb-6 pt-4 border-t border-gray-100">
         {(type === "success" || type === "error" || type === "warning") && (
           <Button
             text={dinamicType.label}
-            fn={() => type !== "success" ? showModal(false) : reloadPageFn((v) => v + 1)}
+            fn={() =>
+              type !== "success" ? showModal(false) : reloadPageFn((v) => v + 1)
+            }
             style={dinamicType.solid}
           />
         )}

@@ -93,13 +93,14 @@ export default function AvaliableUnit({
       }
       
       const data = await response.json()
-      console.log(data)
 
-      setModalMessage("Abertos com sucesso");
+      setModalMessage("Operação concluída!");
       setModalType("success");
       setShowModal(true);
 
       setSelectedTotal([])
+
+      return data
     } catch (e) {
       console.log(e)
       setModalMessage(e.message);
