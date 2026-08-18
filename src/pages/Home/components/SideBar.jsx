@@ -1,13 +1,61 @@
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
-import { LuUserCog, LuLayoutDashboard, LuSettings } from "react-icons/lu";
+import {
+  LuUserCog,
+  LuLayoutDashboard,
+  LuSettings,
+  LuUsers,
+  LuLogOut,
+} from "react-icons/lu";
 import { BsUpcScan } from "react-icons/bs";
+
+function handleFinishSession(navigate) {
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
+  navigate("/login");
+}
+
+const NAV_ITEMS = [
+  {
+    key: "home",
+    label: "Unitizadores",
+    path: "/home",
+    icon: LuLayoutDashboard,
+    roles: ["OWNER", "ADMIN", "MANAGER", "USER"],
+  },
+  {
+    key: "usuarios",
+    label: "Gerenciar Usuários",
+    path: "/users",
+    icon: LuUsers,
+    roles: ["OWNER", "ADMIN", "MANAGER"],
+  },
+  {
+    key: "config",
+    label: "Configurações",
+    path: "/config",
+    icon: LuSettings,
+    roles: ["OWNER", "ADMIN", "MANAGER"],
+  },
+  {
+    key: "finish-session",
+    label: "Sair",
+    fn: handleFinishSession,
+    icon: LuLogOut,
+    roles: ["OWNER", "ADMIN", "MANAGER", "USER"],
+  },
+];
 
 const fallbackId = Math.floor(1000 + Math.random() * 9000);
 
 export default function SideBar({ isOpen, setIsOpen }) {
   const user = useOutletContext();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const visibleItems = NAV_ITEMS.filter((i) => i.roles.includes(user?.role));
+
+  const currentLocation = location.pathname;
 
   const firstLetter = (user?.username || "U").charAt(0).toUpperCase();
 
@@ -36,21 +84,20 @@ export default function SideBar({ isOpen, setIsOpen }) {
           <p className="text-[11px] font-bold tracking-wider text-white/20 uppercase pl-3 mb-2">
             Navegação
           </p>
-
-          <button className="flex items-center gap-3 w-full p-3 text-sm font-medium text-[#8b82f6] bg-[#5046E7]/10 border border-[#5046E7]/20 rounded-xl transition-all">
-            <LuLayoutDashboard className="text-lg" />
-            Unitizadores
-          </button>
-
-          <button className="flex items-center gap-3 cursor-pointer w-full p-3 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-            <BsUpcScan className="text-lg" />
-            Ler Código
-          </button>
-
-          <button className="flex items-center gap-3 cursor-pointer w-full p-3 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-            <LuSettings className="text-lg" />
-            Configurações
-          </button>
+          {visibleItems.map(({ key, label, path, fn, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => (path ? navigate(path) : fn?.(navigate))}
+              className={`flex items-center gap-3 cursor-pointer w-full p-3 text-sm font-medium ${
+                path && currentLocation === path
+                  ? "text-[#8b82f6] bg-[#5046E7]/10 border border-[#5046E7]/20"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+              } rounded-xl transition-all`}
+            >
+              <Icon className="text-lg" />
+              {label}
+            </button>
+          ))}
         </nav>
       </div>
 

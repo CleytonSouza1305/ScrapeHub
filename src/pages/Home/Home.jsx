@@ -20,7 +20,6 @@ import { useOutletContext } from "react-router-dom";
 
 export default function Home() {
   const user = useOutletContext();
-  console.log(user);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   const [data, setData] = useState([]);
