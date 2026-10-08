@@ -258,6 +258,8 @@ export default function AvaliableUnit({
           type={modalType}
           confirmFn={confirmFn}
           reloadPageFn={reloadFn}
+          successTitle={"Unitizadores abertos com sucesso:"}
+          errorTitle={"Unitizadores com erro ao abrir:"}
         />
       )}
     </div>

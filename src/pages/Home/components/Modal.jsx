@@ -19,12 +19,51 @@ function Button({ text, fn, style, disabled }) {
   );
 }
 
+const SECTION_STYLES = {
+  success: {
+    title: "text-emerald-600",
+    badge: "bg-emerald-600",
+  },
+  error: {
+    title: "text-red-600",
+    badge: "bg-red-600",
+  },
+};
+
+function DetailsSection({ title, items, variant, className = "" }) {
+  if (!items || items.length === 0) return null;
+
+  const styles = SECTION_STYLES[variant];
+
+  return (
+    <div className={className}>
+      <p className={`font-bold text-lg mb-4 ${styles.title}`}>{title}</p>
+      <div>
+        {items.map((item, index) => (
+          <p className="flex gap-2 items-center mt-2 mb-2" key={index}>
+            <span
+              className={`${styles.badge} flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-semibold`}
+            >
+              {index + 1}
+            </span>
+            <span className="font-semibold text-[16px] text-gray-700">
+              {item.message}
+            </span>
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Modal({
   message,
   type,
   showModal,
   confirmFn,
   reloadPageFn,
+  successTitle = "Detalhes",
+  errorTitle = "Erros encontrados",
 }) {
   const [details, setDetails] = useState(null);
 
@@ -102,55 +141,17 @@ export default function Modal({
 
         {details && (
           <div className="p-4">
-            {details.oppeneds && details.oppeneds.length > 0 && (
-              <>
-                <p className="font-bold text-lg text-emerald-600 mb-4">
-                  Unitizadores abertos com sucesso
-                </p>
-                <div>
-                  {details.oppeneds.map((i, index) => {
-                    return (
-                      <p
-                        className="flex gap-2 items-center mt-2 mb-2"
-                        key={index}
-                      >
-                        <span className="bg-emerald-600 flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-semibold">
-                          {`${index + 1}`}
-                        </span>
-                        <span className="font-semibold text-[16px] text-gray-700">
-                          {i.message}
-                        </span>
-                      </p>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-
-            {details.error && details.error.length > 0 && (
-              <>
-                <p className="font-bold text-lg text-red-600 mb-4 mt-8">
-                  Unitizadores com erro
-                </p>
-                <div>
-                  {details.error.map((i, index) => {
-                    return (
-                      <p
-                        className="flex gap-2 items-center mt-2 mb-2"
-                        key={index}
-                      >
-                        <span className="bg-red-600 flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-semibold">
-                          {`${index + 1}`}
-                        </span>
-                        <span className="font-semibold text-[16px] text-gray-700">
-                          {i.message}
-                        </span>
-                      </p>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+            <DetailsSection
+              title={successTitle}
+              items={details.oppeneds}
+              variant="success"
+            />
+            <DetailsSection
+              title={errorTitle}
+              items={details.error}
+              variant="error"
+              className="mt-8"
+            />
           </div>
         )}
       </div>
