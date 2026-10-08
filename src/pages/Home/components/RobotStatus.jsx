@@ -1,4 +1,4 @@
-export default function RobotStatus({ status, setUnitilizerCount }) {
+export default function RobotStatus({ status, setUnitilizerCount, message }) {
   return (
     <div className="bg-[#121625] border border-white/5 rounded-lg p-4 mb-8 flex items-center justify-between">
       <div className="flex items-center gap-3 bg-[#121625] border border-white/5 rounded-lg p-4 justify-between">
@@ -44,7 +44,9 @@ export default function RobotStatus({ status, setUnitilizerCount }) {
             onClick={() => setUnitilizerCount((v) => v + 1)}
             className="text-xs bg-red-500/10 border border-red-500/30 text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition-all cursor-pointer"
           >
-            Tentar Reconectar
+            {
+              !message ? "Tentar Reconectar" : message
+            }
           </button>
         )}
       </div>

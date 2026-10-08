@@ -7,7 +7,6 @@ import {
   LuUsers,
   LuLogOut,
 } from "react-icons/lu";
-import { BsUpcScan } from "react-icons/bs";
 
 function handleFinishSession(navigate) {
   localStorage.removeItem("token");

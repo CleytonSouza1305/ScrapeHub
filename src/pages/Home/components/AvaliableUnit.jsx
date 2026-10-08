@@ -58,7 +58,7 @@ export default function AvaliableUnit({
 
   async function confirmFn() {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
 
       if (!token) {
         setModalMessage(
@@ -258,6 +258,8 @@ export default function AvaliableUnit({
           type={modalType}
           confirmFn={confirmFn}
           reloadPageFn={reloadFn}
+          successTitle={"Unitizadores abertos com sucesso:"}
+          errorTitle={"Unitizadores com erro ao abrir:"}
         />
       )}
     </div>
