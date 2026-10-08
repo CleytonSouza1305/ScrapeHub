@@ -25,7 +25,10 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unitilizerCount, setUnitilizerCount] = useState(0);
+
   const [robotStatus, setRobotStatus] = useState("loading");
+  const [robotMessage, setRobotMessage] = useState(undefined);
+
   const [objectsToday, setObjectsToday] = useState([]);
 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -131,21 +134,30 @@ export default function Home() {
 
         if (!response.ok) {
           setData([]);
+
+          if (
+            response.statusText === "Unauthorized" ||
+            response.status === 401
+          ) {
+            throw new Error("Sua sessão expirou, faça login novamente para retornar as atividades.");
+          }
           setRobotStatus("error");
           throw new Error("Falha ao buscar os dados");
         }
 
         if (+response.status === 500) {
           setData([]);
+          setRobotMessage("Erro interno detectado")
           setRobotStatus("error");
         }
 
         const result = await response.json();
         setData(result);
         setRobotStatus("connected");
-      } catch (error) {
+      } catch (e) {
+        setRobotMessage(e.message)
         setRobotStatus("error");
-        console.error("Erro na requisição:", error);
+        console.error("Erro na requisição:", e);
       } finally {
         setIsLoading(false);
       }
@@ -203,6 +215,7 @@ export default function Home() {
       <RobotStatus
         status={robotStatus}
         setUnitilizerCount={setUnitilizerCount}
+        message={robotMessage}
       />
 
       <div className="bg-[#121625] border border-white/5 rounded-lg p-4 mb-8 flex items-center  justify-between">
