@@ -47,7 +47,7 @@ export default function Users() {
         </h1>
 
         <p
-        className="text-3xl font-bold"
+        className="text-3xl font-bold mr-[20%]"
         >Bem-VIndo, <span className="text-[#5046E7]">{name}</span>
         </p>
 
