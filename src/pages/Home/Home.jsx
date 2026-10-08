@@ -17,6 +17,7 @@ import Button from "./components/Button";
 import { MdCheckBox, MdCheckBoxOutlineBlank } from "react-icons/md";
 import AvaliableUnit from "./components/AvaliableUnit";
 import { useOutletContext } from "react-router-dom";
+import PostedObjectsModal from './components/PostedObjectsModal'
 
 export default function Home() {
   const user = useOutletContext();
@@ -34,6 +35,8 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [unitModalIsOpen, setUnitModalIsOpen] = useState(false);
+
+  const [pendingModalIsOpen, setPendingModalIsOpen] = useState(false);
 
   const validArr = data ?? [];
 
@@ -121,6 +124,7 @@ export default function Home() {
       setSearchTerm("");
       setSelectedUnitilizers([]);
       setRobotStatus("loading");
+      setUnitModalIsOpen(false)
       try {
         const response = await fetch(`http://localhost:2200/api/scrapp`, {
           method: "GET",
@@ -229,7 +233,7 @@ export default function Home() {
                 bgColor={"bg-[#7a7a79]"}
                 content={"Víncular objeto à mala"}
                 icon={<FiLink />}
-                fn={() => alert("Mostrar total de objetos")}
+                fn={() => setPendingModalIsOpen(true)}
                 txtColor={"text-white"}
               />
             </>
@@ -375,6 +379,12 @@ export default function Home() {
           token={token}
           opennedData={data}
           reloadFn={setUnitilizerCount}
+        />
+      )}
+
+      {pendingModalIsOpen && (
+        <PostedObjectsModal
+          onClose={setPendingModalIsOpen}
         />
       )}
     </div>
