@@ -17,6 +17,7 @@ import Button from "./components/Button";
 import { MdCheckBox, MdCheckBoxOutlineBlank } from "react-icons/md";
 import AvaliableUnit from "./components/AvaliableUnit";
 import { useOutletContext } from "react-router-dom";
+import Modal from "./components/Modal";
 
 export default function Home() {
   const user = useOutletContext();
@@ -38,13 +39,17 @@ export default function Home() {
 
   const [unitModalIsOpen, setUnitModalIsOpen] = useState(false);
 
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("warning");
+
   const validArr = data ?? [];
 
   const filteredData = validArr.filter(
     (item) =>
-      item.unitizador &&
-      item.unitizador.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.plano.toLowerCase().includes(searchTerm.toLowerCase())
+      (item.unitizador &&
+        item.unitizador.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      item.plano.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   filteredData.sort((a, b) => {
@@ -67,30 +72,51 @@ export default function Home() {
   });
 
   async function closeUnitFn() {
-    setIsLoading(true);
     try {
-      if (selectedUnitilizers.length > 0) {
-        const response = await fetch(`http://localhost:2200/api/scrapp/close`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ unitilizers: selectedUnitilizers }),
-        });
+      const response = await fetch(`http://localhost:2200/api/scrapp/close`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ unitilizers: selectedUnitilizers }),
+      });
 
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error("Falha ao enviar os dados...", data.message);
-        }
-        setIsSelectionMode(false);
-        setUnitilizerCount((v) => v + 1);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || `Erro no servidor: status ${response.status}`,
+        );
       }
+
+      setModalMessage("Operação concluída!");
+      setModalType("success");
+      setShowModal(true);
+
+      return {
+        oppeneds: data.results?.closeds ?? [],
+        error: data.results?.error ?? [],
+      };
     } catch (e) {
       console.error("Erro ao fechar unitizador:", e);
-    } finally {
-      setIsLoading(false);
+      setModalMessage(e.message);
+      setModalType("error");
+      setShowModal(true);
     }
+  }
+
+  function askToCloseUnits() {
+    const list = selectedUnitilizers.join("\n");
+
+    setModalMessage(`Deseja fechar os seguintes unitizadores:\n\n${list}`);
+    setModalType("processing");
+    setShowModal(true);
+  }
+
+  function handleReload(updater) {
+    setShowModal(false);
+    setUnitilizerCount(updater);
   }
 
   useEffect(() => {
@@ -139,7 +165,9 @@ export default function Home() {
             response.statusText === "Unauthorized" ||
             response.status === 401
           ) {
-            throw new Error("Sua sessão expirou, faça login novamente para retornar as atividades.");
+            throw new Error(
+              "Sua sessão expirou, faça login novamente para retornar as atividades.",
+            );
           }
           setRobotStatus("error");
           throw new Error("Falha ao buscar os dados");
@@ -147,7 +175,7 @@ export default function Home() {
 
         if (+response.status === 500) {
           setData([]);
-          setRobotMessage("Erro interno detectado")
+          setRobotMessage("Erro interno detectado");
           setRobotStatus("error");
         }
 
@@ -155,7 +183,7 @@ export default function Home() {
         setData(result);
         setRobotStatus("connected");
       } catch (e) {
-        setRobotMessage(e.message)
+        setRobotMessage(e.message);
         setRobotStatus("error");
         console.error("Erro na requisição:", e);
       } finally {
@@ -267,13 +295,7 @@ export default function Home() {
                   )
                 }
                 fn={
-                  selectedUnitilizers.length < 1
-                    ? undefined
-                    : () => {
-                        if (selectedUnitilizers.length > 0) {
-                          closeUnitFn();
-                        }
-                      }
+                  selectedUnitilizers.length < 1 ? undefined : askToCloseUnits
                 }
                 txtColor={
                   selectedUnitilizers.length < 1
@@ -304,7 +326,9 @@ export default function Home() {
                   if (selectedUnitilizers.length === filteredData.length) {
                     setSelectedUnitilizers([]);
                   } else {
-                    setSelectedUnitilizers(filteredData.map((item) => item.unitizador));
+                    setSelectedUnitilizers(
+                      filteredData.map((item) => item.unitizador),
+                    );
                   }
                 }}
                 txtColor={
@@ -347,7 +371,8 @@ export default function Home() {
 
       <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-3">
         <h2 className="text-xl text-white/60 font-semibold">
-          Unitizadores encontrados: <span className="text-white/80">{filteredData.length}</span>
+          Unitizadores encontrados:{" "}
+          <span className="text-white/80">{filteredData.length}</span>
         </h2>
       </div>
 
@@ -355,9 +380,6 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredData.map((item) => {
             const quantity = item.itens ? item.itens.length : 0;
-            if (item.posicao === '9') {
-              console.log(item)
-            }
             return (
               <Card
                 key={item.id}
@@ -380,6 +402,20 @@ export default function Home() {
             ? `Não há nada por aqui...`
             : `Nenhum unitizador encontrado para "${searchTerm}"`}
         </p>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <Modal
+            message={modalMessage}
+            type={modalType}
+            showModal={setShowModal}
+            confirmFn={closeUnitFn}
+            reloadPageFn={handleReload}
+            successTitle="Unitizadores fechados com sucesso:"
+            errorTitle="Unitizadores com erro ao fechar:"
+          />
+        </div>
       )}
 
       {unitModalIsOpen && (
